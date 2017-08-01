@@ -1,0 +1,27 @@
+{
+  "name": "JIRA SYNCER",
+  "version": "1.0",
+  "manifest_version": 2,
+  "permissions": [
+    "storage",
+    "webRequest",
+    "https://stash.ryanair.com:8443/*",
+    "https://jira.ryanair.com:8443/*"
+  ],
+  "background": {
+    "scripts": [
+      "/node_modules/rxjs/bundles/Rx.js",
+      "node_modules/whatwg-fetch/fetch.js",
+      "ajax.js",
+      "jira-statuses.js",
+      "basic-authentication.js",
+      "stash.js",
+      "jira.js",
+      "background.js"]
+  },
+  "description": "Updating jira statuses in sync with stash",
+  "browser_action": {
+    "default_popup": "index.html",
+    "default_title": "Sync JIRA"
+  }
+}
