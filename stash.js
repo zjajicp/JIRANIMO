@@ -4,8 +4,16 @@ const Stash = function ({
   getBasicAuthentication,
   ajax,
   localStorage,
-  webRequests }) {
-  const unmergedPrs = [];
+  webRequest }) {
+  let unmergedPrs = [{
+    "title": "HOTFIX fixed issue with double banner",
+    "description": "HOTFIX fixed issue with double banner"
+  }];
+
+  // localStorage.get('unmerged', ({ unmerged }) => {
+  //   unmergedPrs = unmerged || [];
+  // });
+
   const saveToLocalStorage = (unmergedList) => {
     localStorage.set({
       name: 'unmerged',
@@ -13,13 +21,19 @@ const Stash = function ({
     });
   };
 
-  const addToUnmergedList = (pr) => {
-    unmergedPrs.push(pr);
+  const addToUnmergedList = ({ title, description }) => {
+    unmergedPrs.push({
+      title,
+      description
+    });
     saveToLocalStorage(unmergedPrs);
   };
 
+  const getEquals = object =>
+    ({ title, description }) => object.title === title && description === object.description;
+
   const removeFromUnmergedList = (pr) => {
-    const index = unmergedPrs.findIndex(({ id }) => pr.id === id);
+    const index = unmergedPrs.findIndex(getEquals(pr));
     unmergedPrs.splice(index, 1);
     saveToLocalStorage(unmergedPrs);
   };
@@ -27,32 +41,55 @@ const Stash = function ({
 
   const startObservingPrCreation = (prCreationPath) => {
     return observable.create((observer) => {
-      webRequests.onCompleted.addListener(
+      webRequest.onBeforeRequest.addListener(
         (details) => {
-          addToUnmergedList(details);
-          observer.next(details);
-        },
-        { urls: [prCreationPath] });
+          if (details.method !== 'POST') {
+            return;
+          }
+
+          const { title, description } = details.requestBody.formData;
+          addToUnmergedList({
+            title,
+            description
+          });
+
+          observer.next({
+            title,
+            description
+          });
+        }, {
+          urls: [`${config.baseUrl}/${prCreationPath}`]
+        }, ['requestBody']);
     });
   };
 
-  const startPoolingForMerged = ({ poolInterval = 3600000 }) => {
-    return observable.interval(poolInterval).map(() => {
-      return observable
-        .from(unmergedPrs)
-        .switchMap(pr => {
-          return ajax.get(`${config.apiUrl}/pull-requests/${pr.id}`, null, {
-            Authentication: getBasicAuthentication(config.username, config.password)
-          });
-        })
-        .filter(response => response.state === 'MERGED')
-        .do(removeFromUnmergedList);
+  const ajaxGet = (url, params) =>  ajax.get(url, params, {
+      Authentication: getBasicAuthentication(config.username, config.password)
     });
+
+  const startPoolingForMerged = ({ poolInterval = 3600000, mergedPrsPath }) => {
+    return observable
+      .interval(poolInterval)
+      .mergeMap(() => ajaxGet(`${config.baseUrl}/${config.restApiPath}/${mergedPrsPath}`))
+      .pluck('data', 'values')
+      .switchMap(values => observable.from(values))
+      .filter(mergedPr => unmergedPrs.find(getEquals(mergedPr)))
+      .do(removeFromUnmergedList);
+  };
+
+  const getRelatedJiraKeys = (prId) => {
+    const getIssuesUrl = `${config.baseUrl}/${config.jiraRestApiPath}/pull-requests/${prId}/issues`;
+    return ajaxGet(getIssuesUrl)
+      .do(console.log)
+      .pluck('data')
+      .switchMap(jiraTickets => observable.from(jiraTickets))
+      .do(console.log);
   };
 
 
   return {
     startObservingPrCreation,
-    startPoolingForMerged
+    startPoolingForMerged,
+    getRelatedJiraKeys
   };
 };

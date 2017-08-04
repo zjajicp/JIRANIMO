@@ -6,12 +6,11 @@
     "storage",
     "webRequest",
     "https://stash.ryanair.com:8443/*",
-    "https://jira.ryanair.com:8443/*"
+    "https://jira.ryanair.com:8443/rest/api/2/*"
   ],
   "background": {
     "scripts": [
       "/node_modules/rxjs/bundles/Rx.js",
-      "node_modules/whatwg-fetch/fetch.js",
       "ajax.js",
       "jira-statuses.js",
       "basic-authentication.js",

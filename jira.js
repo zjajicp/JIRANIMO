@@ -9,12 +9,6 @@ const Jira = function ({ config, basicAuthentication, ajax }) {
       payload.transition = ticketData.status;
     }
 
-    if (ticketData.status) {
-      fields.status = {
-        id: ticketData.status.id,
-      };
-    }
-
     if (ticketData.projectKey) {
       fields.project = {
         key: ticketData.projectKey,
@@ -54,14 +48,14 @@ const Jira = function ({ config, basicAuthentication, ajax }) {
   const updateTransition = (ticketId, updateData) => {
     const url = `${getUrl(apiUrl, ticketId)}/transitions`;
     return ajax.post(url, getUpdateTransitionPayload(updateData), {
-      Authentication: basicAuthentication(username, password),
+      Authorization: basicAuthentication(username, password),
     });
   };
 
   const getTicket = (ticketId) => {
     const url = getUrl(apiUrl, ticketId);
     return ajax.get(url, null, {
-      Authentication: basicAuthentication(username, password),
+      Authorization: basicAuthentication(username, password),
     });
   };
 

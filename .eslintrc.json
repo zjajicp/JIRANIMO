@@ -11,7 +11,9 @@
     "btoa": true,
     "JIRA_STATUSES": true,
     "chrome": true,
-    "fetch": true
+    "fetch": true,
+    "XMLHttpRequest": true,
+    "Stash": true
   },
    "rules": {
        "comma-dangle": "off",
