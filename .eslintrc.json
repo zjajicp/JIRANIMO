@@ -13,7 +13,10 @@
     "chrome": true,
     "fetch": true,
     "XMLHttpRequest": true,
-    "Stash": true
+    "Stash": true,
+    "document": true,
+    "Notifier": true,
+    "ConfigLoader": true
   },
    "rules": {
        "comma-dangle": "off",

@@ -1,0 +1,38 @@
+.form {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+}
+
+.form-control {
+  margin-bottom: 10px;
+}
+
+.form-control__label {
+  display: block;
+}
+
+.form-control__input {
+  width: 50%;
+}
+
+.form-section-title {
+      border-bottom: 1px solid darkcyan;
+      padding: 0 0 5px 0;
+      margin-bottom: 5px;
+      font-weight: bold;
+}
+
+.message {
+  color: crimson;
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
+
+.fade-in {
+  opacity: 1;
+}
+
+.fade-out {
+  opacity: 0;
+}

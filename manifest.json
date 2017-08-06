@@ -5,22 +5,29 @@
   "permissions": [
     "storage",
     "webRequest",
+    "notifications",
     "https://stash.ryanair.com:8443/*",
     "https://jira.ryanair.com:8443/rest/api/2/*"
   ],
   "background": {
     "scripts": [
       "/node_modules/rxjs/bundles/Rx.js",
-      "ajax.js",
-      "jira-statuses.js",
-      "basic-authentication.js",
-      "stash.js",
-      "jira.js",
-      "background.js"]
+      "background/ajax.js",
+      "background/jira-statuses.js",
+      "background/basic-authentication.js",
+      "background/stash.js",
+      "background/jira.js",
+      "background/notifier.js",
+      "background/config-loader.js",
+      "background/background.js"]
   },
   "description": "Updating jira statuses in sync with stash",
   "browser_action": {
     "default_popup": "index.html",
     "default_title": "Sync JIRA"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "chrome_style": true
   }
 }
