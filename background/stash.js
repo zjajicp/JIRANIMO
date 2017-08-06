@@ -42,9 +42,11 @@ const Stash = function ({
     const filteredUrls = [`${config.baseUrl}/projects/${config.project}/repos/${config.repository}/pull-requests?create`];
     return observable.create((observer) => {
       let poolRequest;
+      let requestedUrl;
       const onBeforeRequest = (details) => {
         if (details.method === 'POST') {
           poolRequest = Object.assign({}, details.requestBody.formData);
+          requestedUrl = details.url;
         }
 
         return details;
@@ -55,10 +57,11 @@ const Stash = function ({
       }, ['requestBody']);
 
       const onResponseStarted = (details) => {
-        if (details.status < 300 && details.status >= 200) {
+        if (details.url === requestedUrl && details.statusCode < 300 && details.statusCode >= 200) {
           addToUnmergedList(poolRequest);
           observer.next(poolRequest);
         }
+        return details;
       };
 
       webRequest.onResponseStarted.addListener(onResponseStarted, {

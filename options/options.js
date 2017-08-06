@@ -63,7 +63,7 @@
       'stash_rest_jira_path',
       'stash_project',
       'stash_repository',
-      'stash_pool_inteval',
+      'stash_pool_interval',
       'jira_username',
       'jira_password',
       'jira_api_url'];
