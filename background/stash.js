@@ -38,7 +38,6 @@ const Stash = function ({
     saveToLocalStorage(unmergedPrs);
   };
 
-
   const startObservingPrCreation = () => {
     const filteredUrls = [`${config.baseUrl}/projects/${config.project}/repos/${config.repository}/pull-requests?create`];
     return observable.create((observer) => {
@@ -99,10 +98,21 @@ const Stash = function ({
       .do(console.log);
   };
 
+  const getPoolRequest = ({ title, description }, state) => {
+    const getOpenPrsUrl = `${REST_API_URL}/pull-requets`;
+    return ajaxGet(getOpenPrsUrl, {
+      state,
+      limit: 36
+    }).pluck('data', 'values')
+      .switchMap(prs => observable.from(prs))
+      .filter(getEquals({ title, description }))
+      .pluck('0');
+  };
 
   return {
     startObservingPrCreation,
     startPoolingForMerged,
-    getRelatedJiraKeys
+    getRelatedJiraKeys,
+    getPoolRequest
   };
 };

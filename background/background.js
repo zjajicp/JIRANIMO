@@ -36,15 +36,15 @@
       notifications: chrome.notifications
     });
 
-    const notifyMainPageAboutMergedPr = ({ key, url, status }) => {
+    const notifyAboutMergedPr = ({ key, url, statusName }) => {
       notifier.jiraTicketUpdated({
         ticketId: key,
         ticketUrl: url,
-        status
+        ticketStatus: statusName
       });
     };
 
-    const onPrMerged = (mergedPr) => {
+    const updateRelatedJiraTickets = (mergedPr, { status, assignToReporter }) => {
       return stash
         .getRelatedJiraKeys(mergedPr.id)
         .mergeMap(({ key, url }) => jira.getTicket(key)
@@ -55,18 +55,23 @@
           }))
         )
         .mergeMap(({ key, url, assigneeName }) => {
-          return jira.updateTransition(key, {
-            status: JIRA_STATUSES.MOVE_TO_TEST,
-            assigneeName
-          }).map(() => ({
+          const data = {
+            status: status.code,
+            assigneeName: assignToReporter && assigneeName
+          };
+          return jira.updateTransition(key, data).map(() => ({
             key,
             url,
-            status: JIRA_STATUSES.MOVE_TO_TEST
+            statusName: status.name
           }));
         });
     };
 
-    const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation('projects/RA/repos/app.ryanair.com/pull-requests?create')
+    const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
+      .mergeMap(prBasicData => stash.getPoolRequest(prBasicData, 'OPEN'))
+      .mergeMap(prData => updateRelatedJiraTickets(prData, {
+        status: JIRA_STATUSES.CODE_REVIEW
+      }))
       .subscribe({
         next: console.log,
         error: console.error
@@ -74,9 +79,12 @@
 
     const unsubscribeFromWatchingPrMerged = stash.startPoolingForMerged({
       poolInterval: Number(config.stash_pool_interval)
-    }).mergeMap(onPrMerged)
+    }).mergeMap(mergedPr => updateRelatedJiraTickets(mergedPr, {
+      status: JIRA_STATUSES.MOVE_TO_TEST,
+      assignToReporter: true
+    }))
       .subscribe({
-        next: notifyMainPageAboutMergedPr,
+        next: notifyAboutMergedPr,
         error: console.error
       });
 

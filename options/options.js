@@ -11,10 +11,6 @@
     return elem;
   };
 
-  chrome.storage.onChanged.addListener((data) => {
-    console.log(data);
-  });
-
   const addClass = (elem, name) => {
     const className = elem.className;
     if (className.indexOf(name) === -1) {
@@ -37,7 +33,6 @@
     });
   };
 
-
   const notifyFormSaved = (query, message, hideAfter) => {
     const $elem = get(query);
     $elem.innerHTML = message;
@@ -59,8 +54,19 @@
   };
 
   const loadScript = () => {
-    const inputIds = ['stash_username', 'stash_password', 'stash_author_to_watch',
-      'stash_base_url', 'stash_rest_api_path', 'stash_rest_jira_path', 'stash_project', 'stash_repository', 'stash_pool_inteval', 'jira_username', 'jira_password', 'jira_api_url'];
+    const inputIds = [
+      'stash_username',
+      'stash_password',
+      'stash_author_to_watch',
+      'stash_base_url',
+      'stash_rest_api_path',
+      'stash_rest_jira_path',
+      'stash_project',
+      'stash_repository',
+      'stash_pool_inteval',
+      'jira_username',
+      'jira_password',
+      'jira_api_url'];
 
     restore();
     get('save_btn').addEventListener('click', getOnSave(inputIds));

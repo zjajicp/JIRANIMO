@@ -1,8 +1,26 @@
 const JIRA_STATUSES = {
-  REOPENED: '311',
-  CODE_REVIEW: '21',
-  MOVE_TO_TEST: '31',
-  START_PROGERSS: '291',
-  FIX_TO_MASTER: '361',
-  REJECTED: '331'
+  REOPENED: {
+    code: '311',
+    name: 'Reopened'
+  },
+  CODE_REVIEW: {
+    code: '21',
+    name: 'Code Review'
+  },
+  MOVE_TO_TEST: {
+    code: '31',
+    name: 'In Test'
+  },
+  START_PROGERSS: {
+    code: '291',
+    name: 'In Progress'
+  },
+  FIX_TO_MASTER: {
+    code: '361',
+    name: 'Fixed on master'
+  },
+  REJECTED: {
+    code: '331',
+    name: 'Rejected'
+  }
 };
