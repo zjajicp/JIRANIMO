@@ -27,7 +27,7 @@ const Ajax = function Ajax({ observable }) {
       return `${acc}${encodedUrl}${suffix}`;
     }, '');
 
-    return encodedParams && `/?${encodedParams}`;
+    return encodedParams && `?${encodedParams}`;
   };
 
   const isSuccess = statusCode => statusCode >= 200 && statusCode < 300;

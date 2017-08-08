@@ -11,7 +11,7 @@ const JIRA_STATUSES = {
     code: '31',
     name: 'In Test'
   },
-  START_PROGERSS: {
+  START_PROGRESS: {
     code: '291',
     name: 'In Progress'
   },

@@ -7,6 +7,7 @@
     const jira = Jira({
       ajax,
       basicAuthentication: getBasicAuthentication,
+      observable: Rx.Observable,
       config: {
         username: config.jira_username,
         password: config.jira_password,
@@ -44,7 +45,7 @@
       });
     };
 
-    const updateRelatedJiraTickets = (mergedPr, { status, assignToReporter }) => {
+    const updateRelatedJiraTickets = (mergedPr, { statusPath, assignToReporter }) => {
       return stash
         .getRelatedJiraKeys(mergedPr.id)
         .mergeMap(({ key, url }) => jira.getTicket(key)
@@ -56,21 +57,24 @@
         )
         .mergeMap(({ key, url, assigneeName }) => {
           const data = {
-            status: status.code,
+            statusPath: statusPath.map(status => status.code),
             assigneeName: assignToReporter && assigneeName
           };
-          return jira.updateTransition(key, data).map(() => ({
+          return jira.updateTransitionWithPath(key, data).map(() => ({
             key,
             url,
-            statusName: status.name
+            statusName: statusPath[statusPath.length - 1].name
           }));
         });
     };
 
+
     const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
       .mergeMap(prBasicData => stash.getPoolRequest(prBasicData, 'OPEN'))
       .mergeMap(prData => updateRelatedJiraTickets(prData, {
-        status: JIRA_STATUSES.CODE_REVIEW
+        statusPath: [
+          JIRA_STATUSES.START_PROGRESS,
+          JIRA_STATUSES.CODE_REVIEW]
       }))
       .subscribe({
         next: console.log,
@@ -79,8 +83,12 @@
 
     const unsubscribeFromWatchingPrMerged = stash.startPoolingForMerged({
       poolInterval: Number(config.stash_pool_interval)
-    }).mergeMap(mergedPr => updateRelatedJiraTickets(mergedPr, {
-      status: JIRA_STATUSES.MOVE_TO_TEST,
+    }).switchMap(mergedPr => updateRelatedJiraTickets(mergedPr, {
+      statusPath: [
+        JIRA_STATUSES.START_PROGRESS,
+        JIRA_STATUSES.CODE_REVIEW,
+        JIRA_STATUSES.MOVE_TO_TEST
+      ],
       assignToReporter: true
     }))
       .subscribe({

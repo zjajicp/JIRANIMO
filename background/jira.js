@@ -1,13 +1,9 @@
-const Jira = function ({ config, basicAuthentication, ajax }) {
+const Jira = function ({ config, basicAuthentication, ajax, observable }) {
   const { username, password, apiUrl } = config;
 
-  const getUpdateTransitionPayload = (ticketData) => {
+  const getUpdateTicketPayload = (ticketData) => {
     const payload = {};
     const fields = {};
-
-    if (ticketData.status) {
-      payload.transition = ticketData.status;
-    }
 
     if (ticketData.projectKey) {
       fields.project = {
@@ -44,11 +40,56 @@ const Jira = function ({ config, basicAuthentication, ajax }) {
     return `${baseUrl}/issue${(ticketId ? `/${ticketId}` : '')}`;
   };
 
+  const updateTicketData = (ticketId, updateData) => {
+    const url = getUrl(apiUrl, ticketId);
+    return ajax.put(url, getUpdateTicketPayload(updateData), {
+      Authorization: basicAuthentication(username, password)
+    });
+  };
 
   const updateTransition = (ticketId, updateData) => {
     const url = `${getUrl(apiUrl, ticketId)}/transitions`;
-    return ajax.post(url, getUpdateTransitionPayload(updateData), {
+    return ajax.post(url, {
+      transition: updateData.status
+    }, {
       Authorization: basicAuthentication(username, password),
+    }).mergeMap(() => updateTicketData(ticketId, updateData));
+  };
+
+  const updateTransitionWithPath = (ticketId, updateData) => {
+    return observable.create((observer) => {
+      const path = updateData.statusPath;
+      let pathIndex = path.length - 1;
+      const subscriptions = [];
+      (function update(status) {
+        const subscription = updateTransition(ticketId, Object.assign({
+          status
+        }, updateData))
+          .catch((errData) => {
+            if (errData.status === 400 && errData.data.errorMessages &&
+              errData.data.errorMessages[0].startsWith('It seems that you have tried to perform a workflow operation')) {
+              pathIndex -= 1;
+              update(path[pathIndex]);
+            } else {
+              observer.error(errData);
+            }
+          })
+          .subscribe((data) => {
+            if (pathIndex === path.length - 1) {
+              observer.next(data);
+              observer.complete();
+            } else {
+              pathIndex += 1;
+              update(path[pathIndex]);
+            }
+          });
+
+        subscriptions.push(subscription);
+      }(path[pathIndex]));
+
+      return () => {
+        subscriptions.forEach(subscription => subscription.unsubscribe());
+      };
     });
   };
 
@@ -62,5 +103,7 @@ const Jira = function ({ config, basicAuthentication, ajax }) {
   return {
     updateTransition,
     getTicket,
+    updateTicketData,
+    updateTransitionWithPath
   };
 };
