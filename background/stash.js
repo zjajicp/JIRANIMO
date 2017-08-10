@@ -54,6 +54,7 @@ const Stash = function ({
           };
           addToUnmergedList(poolRequest);
           observer.next(poolRequest);
+          console.log('PR started being monitored');
         }
 
         return details;
@@ -83,7 +84,7 @@ const Stash = function ({
     }))
     .pluck('data', 'values')
     .switchMap(values => observable.from(values))
-    .filter(mergedPr => {
+    .filter((mergedPr) => {
       return unmergedPrs.find(getEquals(mergedPr));
     })
     .do(removeFromUnmergedList);
@@ -91,7 +92,6 @@ const Stash = function ({
   const getRelatedJiraKeys = (prId) => {
     const getIssuesUrl = `${REST_JIRA_URL}/pull-requests/${prId}/issues`;
     return ajaxGet(getIssuesUrl)
-      .do(console.log)
       .pluck('data')
       .switchMap(jiraTickets => observable.from(jiraTickets))
       .do(console.log);
@@ -104,8 +104,9 @@ const Stash = function ({
       limit: 36
     }).pluck('data', 'values')
       .switchMap(prs => observable.from(prs))
-      .filter(getEquals({ title, description }))
-      .pluck('0');
+      .filter((pr) => {
+        return getEquals({ title, description })(pr);
+      });
   };
 
   return {

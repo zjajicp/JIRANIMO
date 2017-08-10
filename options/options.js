@@ -1,4 +1,4 @@
-(function optionsScript() {
+(function optionsScript({ observable }) {
   const formElems = {};
 
   const get = (formElemId) => {
@@ -25,10 +25,16 @@
       .join(' ');
   };
 
-  const restore = () => {
-    chrome.storage.local.get('config', ({ config = {} }) => {
-      Object.keys(config).forEach((id) => {
-        get(id).value = config[id] || '';
+  const getStoredConfig = (localStorage) => {
+    return observable.create((observer) => {
+      localStorage.get('config', ({ config = {} }) => {
+        Object.keys(config).forEach((id) => {
+          observer.next({
+            name: id,
+            value: config[id]
+          });
+        });
+        observer.complete();
       });
     });
   };
@@ -42,19 +48,38 @@
     }, hideAfter);
   };
 
-  const getOnSave = (inputIds) => () => {
-    const formModel = inputIds.reduce((acc, id) => Object.assign(acc, {
-      [id]: get(id).value
-    }), {});
+  // const getNeededPermissions = (formData) => {
+  //   return observable.create(({ next, complete }) => {
+  //     const stashPermission = `${formData.stash_base_url}/*`;
+  //     const jiraPermission = `${formData.jira_api_url}/*`;
+  //     chrome.permissions.getAll(({ origins }) => {
+  //       let originsToRequest = [];
+  //       if (!origins.includes(stashPermission)) {
+  //         originsToRequest = originsToRequest.concat(stashPermission);
+  //       }
 
-    chrome.storage.local.set({
-      config: formModel
-    });
-    notifyFormSaved('message', 'Config saved', 2000);
-  };
+  //       if (!origins.includes(jiraPermission)) {
+  //         originsToRequest = originsToRequest.concat(jiraPermission);
+  //       }
 
-  const loadScript = () => {
-    const inputIds = [
+  //       if (originsToRequest.length) {
+  //         next({
+  //           origins: originsToRequest
+  //         });
+  //       }
+  //       complete();
+  //     });
+  //   });
+  // };
+
+
+  observable.fromEvent(document, 'DOMContentLoaded')
+    .switchMap(() => getStoredConfig(chrome.storage.local))
+    .do(({ name, value = '' }) => {
+      get(name).value = value;
+    })
+    .switchMap(() => observable.fromEvent(get('save_btn'), 'click'))
+    .switchMap(() => Rx.Observable.of([
       'stash_username',
       'stash_password',
       'stash_author_to_watch',
@@ -66,10 +91,16 @@
       'stash_pool_interval',
       'jira_username',
       'jira_password',
-      'jira_api_url'];
-
-    restore();
-    get('save_btn').addEventListener('click', getOnSave(inputIds));
-  };
-  document.addEventListener('DOMContentLoaded', loadScript);
-}());
+      'jira_api_url']
+      .reduce((formData, inputName) => Object.assign({
+        [inputName]: get(inputName).value
+      }, formData), {})))
+    .subscribe((formData) => {
+      chrome.storage.local.set({
+        config: formData
+      });
+      notifyFormSaved('message', 'Config saved', 2000);
+    });
+}({
+  observable: Rx.Observable
+}));

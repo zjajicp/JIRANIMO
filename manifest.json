@@ -6,8 +6,7 @@
     "storage",
     "webRequest",
     "notifications",
-    "https://stash.ryanair.com:8443/*",
-    "https://jira.ryanair.com:8443/rest/api/2/*"
+    "https://*/*"
   ],
   "background": {
     "scripts": [

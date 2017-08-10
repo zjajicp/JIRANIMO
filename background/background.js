@@ -45,9 +45,9 @@
       });
     };
 
-    const updateRelatedJiraTickets = (mergedPr, { statusPath, assignToReporter }) => {
+    const updateRelatedJiraTickets = (prData, { statusPath, assignToReporter }) => {
       return stash
-        .getRelatedJiraKeys(mergedPr.id)
+        .getRelatedJiraKeys(prData.id)
         .mergeMap(({ key, url }) => jira.getTicket(key)
           .map(({ data }) => ({
             key,
@@ -63,13 +63,16 @@
           return jira.updateTransitionWithPath(key, data).map(() => ({
             key,
             url,
-            statusName: statusPath[statusPath.length - 1].name
+            statusName: statusPath[statusPath.length - 1].name,
+            prId: prData.id,
+            prTitle: prData.title
           }));
         });
     };
 
 
     const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
+      .delay(5000)
       .mergeMap(prBasicData => stash.getPoolRequest(prBasicData, 'OPEN'))
       .mergeMap(prData => updateRelatedJiraTickets(prData, {
         statusPath: [
@@ -77,7 +80,12 @@
           JIRA_STATUSES.CODE_REVIEW]
       }))
       .subscribe({
-        next: console.log,
+        next({ prId, prTitle }) {
+          notifier.prBeingMonitored({
+            prId,
+            prTitle
+          });
+        },
         error: console.error
       });
 

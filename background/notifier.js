@@ -13,7 +13,19 @@ const Notifier = ({
     return notificationId;
   };
 
+  const prBeingMonitored = ({ prTitle, prId }) => {
+    const id = prTitle + prId;
+    notifications.create(id, {
+      iconUrl: 'icon.png',
+      type: 'basic',
+      title: 'Pool request created',
+      message: `Pool request (#${prId} ${prTitle}) is now being monitored`
+    });
+    return id;
+  };
+
   return {
-    jiraTicketUpdated
+    jiraTicketUpdated,
+    prBeingMonitored
   };
 };
