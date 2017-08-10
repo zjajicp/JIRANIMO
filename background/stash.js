@@ -22,7 +22,7 @@ const Stash = function ({
 
   const getEquals = (object) => {
     return ({ title = '', description = '' }) => {
-      return (object.title || '') === title && description === (object.description || '');
+      return (object.title || '') === title.trim() && description.trim() === (object.description || '');
     };
   };
 

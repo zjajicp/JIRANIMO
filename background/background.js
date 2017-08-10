@@ -72,7 +72,7 @@
 
 
     const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
-      .delay(5000)
+      .delay(15000)
       .mergeMap(prBasicData => stash.getPoolRequest(prBasicData, 'OPEN'))
       .mergeMap(prData => updateRelatedJiraTickets(prData, {
         statusPath: [
