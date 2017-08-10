@@ -34,7 +34,8 @@
     });
 
     const notifier = Notifier({
-      notifications: chrome.notifications
+      notifications: chrome.notifications,
+      observable: Rx.Observable
     });
 
     const notifyAboutMergedPr = ({ key, url, statusName }) => {
@@ -70,22 +71,23 @@
         });
     };
 
-
-    const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
-      .delay(15000)
+    const unsubscribeFromObservingPrCreation = Rx.Observable.of({
+      title: ' Bugfix (RW-25005): Removed action duplication'
+    })
+      .delay(5000)
       .mergeMap(prBasicData => stash.getPoolRequest(prBasicData, 'OPEN'))
       .mergeMap(prData => updateRelatedJiraTickets(prData, {
         statusPath: [
           JIRA_STATUSES.START_PROGRESS,
           JIRA_STATUSES.CODE_REVIEW]
       }))
+      .mergeMap(({ prId, prTitle, url }) => notifier.prBeingMonitored({
+        prId,
+        prTitle,
+        ticketUrl: url
+      }))
       .subscribe({
-        next({ prId, prTitle }) {
-          notifier.prBeingMonitored({
-            prId,
-            prTitle
-          });
-        },
+        next: console.log,
         error: console.error
       });
 

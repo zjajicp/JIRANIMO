@@ -67,7 +67,7 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
         }, updateData))
           .catch((errData) => {
             if (errData.status === 400 && errData.data.errorMessages &&
-              errData.data.errorMessages[0].startsWith('It seems that you have tried to perform a workflow operation')) {
+              errData.data.errorMessages[0].startsWith('It seems that you have tried to perform a workflow operation') && pathIndex === 0) {
               pathIndex -= 1;
               update(path[pathIndex]);
             } else {

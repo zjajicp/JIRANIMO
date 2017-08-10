@@ -6,7 +6,8 @@
     "storage",
     "webRequest",
     "notifications",
-    "https://*/*"
+    "https://*/*",
+    "tabs"
   ],
   "background": {
     "scripts": [

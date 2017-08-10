@@ -1,27 +1,57 @@
 const Notifier = ({
-  notifications
+  notifications,
+  observable
 }) => {
+  const onNotificationButtonClicked = observable.create((observer) => {
+    const onClick = (notificationId, buttonIndex) => {
+      observer.next({
+        notificationId,
+        buttonIndex
+      });
+    };
+    chrome.notifications.onButtonClicked.addListener(onClick);
+    return () => {
+      chrome.notifications.onButtonClicked.removeListener(onClick);
+    };
+  });
+
+  const getOpenTicketHandler = (id, ticketUrl) => {
+    return ({ notificationId }) => {
+      if (id === notificationId) {
+        chrome.tabs.create({
+          url: ticketUrl
+        });
+      }
+    };
+  };
+
   const jiraTicketUpdated = ({ ticketId, ticketUrl, ticketStatus }) => {
     const notificationId = ticketId + ticketUrl;
     notifications.create(notificationId, {
       iconUrl: 'icon.png',
       type: 'basic',
       title: 'JIRA ticket updated',
-      message: `${ticketId} updated and moved to ${ticketStatus}`
+      message: `${ticketId} updated and moved to ${ticketStatus}`,
+      buttons: [{
+        title: 'Open ticket'
+      }]
     });
-
-    return notificationId;
+    return onNotificationButtonClicked.do(getOpenTicketHandler(notificationId, ticketUrl));
   };
 
-  const prBeingMonitored = ({ prTitle, prId }) => {
-    const id = prTitle + prId;
-    notifications.create(id, {
+  const prBeingMonitored = ({ prTitle, prId, ticketUrl }) => {
+    const notificationId = prTitle + prId;
+    notifications.create(notificationId, {
       iconUrl: 'icon.png',
       type: 'basic',
       title: 'Pool request created',
-      message: `Pool request (#${prId} ${prTitle}) is now being monitored`
+      message: `Pool request (#${prId} ${prTitle}) is now being monitored`,
+      buttons: [{
+        title: 'Open ticket'
+      }]
     });
-    return id;
+
+    return onNotificationButtonClicked.do(getOpenTicketHandler(notificationId, ticketUrl));
   };
 
   return {
