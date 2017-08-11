@@ -7,12 +7,20 @@ const JIRA_STATUSES = {
     code: '21',
     name: 'Code Review'
   },
+  CODE_REVIEW_FROM_BLOCKED: {
+    code: '241',
+    name: 'Code review'
+  },
   MOVE_TO_TEST: {
     code: '31',
     name: 'In Test'
   },
-  START_PROGRESS: {
+  START_PROGRESS_FROM_REOPEN: {
     code: '291',
+    name: 'In Progress'
+  },
+  START_PROGRESS_FROM_OPEN: {
+    code: '11',
     name: 'In Progress'
   },
   FIX_TO_MASTER: {

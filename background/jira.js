@@ -56,6 +56,18 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
     }).mergeMap(() => updateTicketData(ticketId, updateData));
   };
 
+  const isNotAllowedTransitionError = errData => errData.status === 400 &&
+    errData.data.errorMessages &&
+    errData.data.errorMessages[0].startsWith('It seems that you have tried to perform a workflow operation');
+
+  const getCleaner = (subscriptions) => {
+    return () => {
+      subscriptions.forEach(subscription => {
+        subscription.unsubscribe();
+      })
+    };
+  };
+
   const updateTransitionWithPath = (ticketId, updateData) => {
     return observable.create((observer) => {
       const path = updateData.statusPath;
@@ -66,9 +78,8 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
           status
         }, updateData))
           .catch((errData) => {
-            if (errData.status === 400 && errData.data.errorMessages &&
-              errData.data.errorMessages[0].startsWith('It seems that you have tried to perform a workflow operation') && pathIndex === 0) {
-              pathIndex -= 1;
+            pathIndex -= 1;
+            if (isNotAllowedTransitionError(errData) && pathIndex >= 0) {
               update(path[pathIndex]);
             } else {
               observer.error(errData);
@@ -87,9 +98,37 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
         subscriptions.push(subscription);
       }(path[pathIndex]));
 
-      return () => {
-        subscriptions.forEach(subscription => subscription.unsubscribe());
-      };
+      return getCleaner(subscriptions);
+    });
+  };
+
+  const updateTransitionWithManyPaths = (ticketId, updateData) => {
+    return observable.create((observer) => {
+      const paths = updateData.statusPaths;
+      let index = 0;
+      const subscriptions = [];
+      (function update(path) {
+        const subscription = updateTransitionWithPath(ticketId, Object.assign({
+          statusPath: path
+        }, updateData))
+          .subscribe({
+            next(data) {
+              observer.next(data);
+            },
+            error(errData) {
+              index += 1;
+              if (isNotAllowedTransitionError(errData) && index < paths.length) {
+                update(paths[index]);
+              } else {
+                observer.error(errData);
+              }
+            }
+          });
+
+        subscriptions.push(subscription);
+      }(paths[index]));
+
+      return getCleaner(subscriptions);
     });
   };
 
@@ -104,6 +143,7 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
     updateTransition,
     getTicket,
     updateTicketData,
-    updateTransitionWithPath
+    updateTransitionWithPath,
+    updateTransitionWithManyPaths
   };
 };

@@ -46,7 +46,7 @@
       });
     };
 
-    const updateRelatedJiraTickets = (prData, { statusPath, assignToReporter }) => {
+    const updateRelatedJiraTickets = (prData, { statusPaths, assignToReporter }) => {
       return stash
         .getRelatedJiraKeys(prData.id)
         .mergeMap(({ key, url }) => jira.getTicket(key)
@@ -58,28 +58,50 @@
         )
         .mergeMap(({ key, url, assigneeName }) => {
           const data = {
-            statusPath: statusPath.map(status => status.code),
+            statusPaths: statusPaths.map(path => path.map(status => status.code)),
             assigneeName: assignToReporter && assigneeName
           };
-          return jira.updateTransitionWithPath(key, data).map(() => ({
+
+          return jira.updateTransitionWithManyPaths(key, data).map(() => ({
             key,
             url,
-            statusName: statusPath[statusPath.length - 1].name,
+            statusName: statusPaths[0][statusPaths[0].length - 1].name,
             prId: prData.id,
             prTitle: prData.title
           }));
         });
     };
 
-    const unsubscribeFromObservingPrCreation = Rx.Observable.of({
-      title: ' Bugfix (RW-25005): Removed action duplication'
-    })
-      .delay(5000)
+    // jira.updateTransitionWithManyPaths('RW-25036', {
+    //   statusPaths: [[
+    //     JIRA_STATUSES.START_PROGRESS_FROM_OPEN,
+    //     JIRA_STATUSES.CODE_REVIEW,
+    //   ], [
+    //     JIRA_STATUSES.START_PROGRESS_FROM_REOPEN,
+    //     JIRA_STATUSES.CODE_REVIEW
+    //   ], [
+    //     JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED,
+    //     JIRA_STATUSES.MOVE_TO_TEST
+    //   ]].map(path => path.map(status => status.code))
+    // }).subscribe(() => {
+    //   console.log('Status updated');
+    // }, () => {
+    //   console.log('not updated')
+    // });
+
+    const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
+      .delay(10000)
       .mergeMap(prBasicData => stash.getPoolRequest(prBasicData, 'OPEN'))
       .mergeMap(prData => updateRelatedJiraTickets(prData, {
-        statusPath: [
-          JIRA_STATUSES.START_PROGRESS,
-          JIRA_STATUSES.CODE_REVIEW]
+        statusPaths: [[
+          JIRA_STATUSES.START_PROGRESS_FROM_OPEN,
+          JIRA_STATUSES.CODE_REVIEW,
+        ], [
+          JIRA_STATUSES.START_PROGRESS_FROM_REOPEN,
+          JIRA_STATUSES.CODE_REVIEW
+        ], [
+          JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED
+        ]]
       }))
       .mergeMap(({ prId, prTitle, url }) => notifier.prBeingMonitored({
         prId,
@@ -94,11 +116,18 @@
     const unsubscribeFromWatchingPrMerged = stash.startPoolingForMerged({
       poolInterval: Number(config.stash_pool_interval)
     }).switchMap(mergedPr => updateRelatedJiraTickets(mergedPr, {
-      statusPath: [
-        JIRA_STATUSES.START_PROGRESS,
+      statusPaths: [[
+        JIRA_STATUSES.START_PROGRESS_FROM_OPEN,
         JIRA_STATUSES.CODE_REVIEW,
         JIRA_STATUSES.MOVE_TO_TEST
-      ],
+      ], [
+        JIRA_STATUSES.START_PROGRESS_FROM_REOPEN,
+        JIRA_STATUSES.CODE_REVIEW,
+        JIRA_STATUSES.MOVE_TO_TEST
+      ], [
+        JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED,
+        JIRA_STATUSES.MOVE_TO_TEST
+      ]],
       assignToReporter: true
     }))
       .subscribe({
