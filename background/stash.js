@@ -27,11 +27,12 @@ const Stash = function ({
   };
 
 
-  const addToUnmergedList = ({ title, description }) => {
+  const addToUnmergedList = ({ title, description, destBranch }) => {
     if (!unmergedPrs.find(getEquals({ title, description }))) {
       unmergedPrs.push({
         title,
-        description
+        description,
+        destBranch
       });
       saveToLocalStorage(unmergedPrs);
     }
@@ -43,6 +44,9 @@ const Stash = function ({
     saveToLocalStorage(unmergedPrs);
   };
 
+  const branchNameMatcher = /refs\/heads\/(.+)/;
+  const getBranchName = fullName => fullName.match(branchNameMatcher)[1];
+
   const startObservingPrCreation = () => {
     const filteredUrls = [`${config.baseUrl}/projects/${config.project}/repos/${config.repository}/pull-requests?create`];
     return observable.create((observer) => {
@@ -50,7 +54,8 @@ const Stash = function ({
         if (details.method === 'POST') {
           const poolRequest = {
             title: details.requestBody.formData.title[0],
-            description: details.requestBody.formData.description[0]
+            description: details.requestBody.formData.description[0],
+            destBranch: getBranchName(details.requestBody.formData.fromBranch[0])
           };
           addToUnmergedList(poolRequest);
           observer.next(poolRequest);
@@ -86,8 +91,7 @@ const Stash = function ({
     .switchMap(values => observable.from(values))
     .filter((mergedPr) => {
       return unmergedPrs.find(getEquals(mergedPr));
-    })
-    .do(removeFromUnmergedList);
+    });
 
   const getRelatedJiraKeys = (prId) => {
     const getIssuesUrl = `${REST_JIRA_URL}/pull-requests/${prId}/issues`;
@@ -113,6 +117,7 @@ const Stash = function ({
     startObservingPrCreation,
     startPoolingForMerged,
     getRelatedJiraKeys,
-    getPoolRequest
+    getPoolRequest,
+    removeFromUnmergedList
   };
 };

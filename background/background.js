@@ -4,6 +4,17 @@
       observable: Rx.Observable
     });
 
+    const jenkins = Jenkins({
+      ajax,
+      observable: Rx.Observable,
+      basicAuthentication: getBasicAuthentication,
+      config: {
+        username: config.jenkins_username,
+        password: config.jenkins_password,
+        baseUrl: config.jenkins_base_url
+      }
+    });
+
     const jira = Jira({
       ajax,
       basicAuthentication: getBasicAuthentication,
@@ -72,22 +83,7 @@
         });
     };
 
-    // jira.updateTransitionWithManyPaths('RW-25036', {
-    //   statusPaths: [[
-    //     JIRA_STATUSES.START_PROGRESS_FROM_OPEN,
-    //     JIRA_STATUSES.CODE_REVIEW,
-    //   ], [
-    //     JIRA_STATUSES.START_PROGRESS_FROM_REOPEN,
-    //     JIRA_STATUSES.CODE_REVIEW
-    //   ], [
-    //     JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED,
-    //     JIRA_STATUSES.MOVE_TO_TEST
-    //   ]].map(path => path.map(status => status.code))
-    // }).subscribe(() => {
-    //   console.log('Status updated');
-    // }, () => {
-    //   console.log('not updated')
-    // });
+    const getJobName = mergedPr => config.jenkins_branch_to_job_mapper[mergedPr.destBranch];
 
     const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
       .delay(10000)
@@ -115,23 +111,33 @@
 
     const unsubscribeFromWatchingPrMerged = stash.startPoolingForMerged({
       poolInterval: Number(config.stash_pool_interval)
-    }).switchMap(mergedPr => updateRelatedJiraTickets(mergedPr, {
-      statusPaths: [[
-        JIRA_STATUSES.START_PROGRESS_FROM_OPEN,
-        JIRA_STATUSES.CODE_REVIEW,
-        JIRA_STATUSES.MOVE_TO_TEST
-      ], [
-        JIRA_STATUSES.START_PROGRESS_FROM_REOPEN,
-        JIRA_STATUSES.CODE_REVIEW,
-        JIRA_STATUSES.MOVE_TO_TEST
-      ], [
-        JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED,
-        JIRA_STATUSES.MOVE_TO_TEST
-      ]],
-      assignToReporter: true
-    }))
+    })
+      .mergeMap((mergedPr) => {
+        const jobName = getJobName(mergedPr);
+        return jenkins.waitForNextDeploy(jobName, Number(config.jenkins_pool_interval))
+          .map(() => mergedPr);
+      })
+      .do((mergedPr) => {
+        stash.removeFromUnmergedList(mergedPr);
+      })
+      .mergeMap(mergedPr => updateRelatedJiraTickets(mergedPr, {
+        statusPaths: [[
+          JIRA_STATUSES.START_PROGRESS_FROM_OPEN,
+          JIRA_STATUSES.CODE_REVIEW,
+          JIRA_STATUSES.MOVE_TO_TEST
+        ], [
+          JIRA_STATUSES.START_PROGRESS_FROM_REOPEN,
+          JIRA_STATUSES.CODE_REVIEW,
+          JIRA_STATUSES.MOVE_TO_TEST
+        ], [
+          JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED,
+          JIRA_STATUSES.MOVE_TO_TEST
+        ]],
+        assignToReporter: true
+      }))
+      .mergeMap(notifyAboutMergedPr)
       .subscribe({
-        next: notifyAboutMergedPr,
+        next: console.log,
         error: console.error
       });
 

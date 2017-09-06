@@ -62,9 +62,9 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
 
   const getCleaner = (subscriptions) => {
     return () => {
-      subscriptions.forEach(subscription => {
+      subscriptions.forEach((subscription) => {
         subscription.unsubscribe();
-      })
+      });
     };
   };
 

@@ -66,8 +66,28 @@
              <label for="" class="form-control__label">REST API url:</label>
             <input type="text" id="jira_api_url" class="form-control__input" />
          </div>
-          <div class="message" id="message">
-          </div>
+         
+         <div class="form-section-title">JEKINS</div> 
+            <div class="form-control">
+            <label for="" class="form-control__label">Username:</label>
+            <input type="text" id="jenkins_username" class="form-control__input">
+         </div>
+         <div class="form-control">
+            <label for="" class="form-control__label">Password:</label>
+            <input type="password" id="jenkins_password" class="form-control__input" />
+         </div>
+        <div class="form-control">
+          <label for="" class="form-control__label">Base Url:</label>
+          <input type="text" id="jenkins_base_url" class="form-control__input" />
+        </div>
+
+        <div class="form-control">
+          <label for="" class="form-control__label">Pool interval:</label>
+          <input type="text" id="jenkins_pool_interval" class="form-control__input" />
+        </div>
+        
+        <div class="message" id="message"></div>
+
          <button id="save_btn">Save</button>
       </div>
       <script src="/node_modules/rxjs/bundles/Rx.js"></script>   

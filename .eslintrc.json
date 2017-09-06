@@ -16,7 +16,8 @@
     "Stash": true,
     "document": true,
     "Notifier": true,
-    "ConfigLoader": true
+    "ConfigLoader": true,
+    "Jenkins": true
   },
    "rules": {
        "comma-dangle": "off",

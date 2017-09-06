@@ -91,7 +91,11 @@
       'stash_pool_interval',
       'jira_username',
       'jira_password',
-      'jira_api_url']
+      'jira_api_url',
+      'jenkins_username',
+      'jenkins_password',
+      'jenkins_base_url',
+      'jenkins_pool_interval']
       .reduce((formData, inputName) => Object.assign({
         [inputName]: get(inputName).value
       }, formData), {})))

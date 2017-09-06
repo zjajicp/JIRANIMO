@@ -7,6 +7,7 @@
     "webRequest",
     "notifications",
     "https://*/*",
+    "http://*/*",
     "tabs"
   ],
   "background": {
@@ -19,6 +20,7 @@
       "background/jira.js",
       "background/notifier.js",
       "background/config-loader.js",
+      "background/jenkins.js",
       "background/background.js"]
   },
   "description": "Updating jira statuses in sync with stash",
