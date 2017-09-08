@@ -55,7 +55,7 @@ const Stash = function ({
           const poolRequest = {
             title: details.requestBody.formData.title[0],
             description: details.requestBody.formData.description[0],
-            destBranch: getBranchName(details.requestBody.formData.fromBranch[0])
+            destBranch: getBranchName(details.requestBody.formData.toBranch[0])
           };
           addToUnmergedList(poolRequest);
           observer.next(poolRequest);
