@@ -13,15 +13,19 @@
   "background": {
     "scripts": [
       "/node_modules/rxjs/bundles/Rx.js",
-      "background/ajax.js",
+      "background/stash-handler/merge-handler.js",
+      "background/stash-handler/pool-request-handler.js",
+      "background/stash-handler/ticket-updater.js",
+      "background/common/ajax.js",
+      "background/common/utils.js",
+      "background/common/notifier.js",
+      "background/common/unmerged-list.js",
       "background/jira-statuses.js",
-      "background/basic-authentication.js",
       "background/stash.js",
       "background/jira.js",
-      "background/notifier.js",
       "background/config-loader.js",
       "background/jenkins.js",
-      "background/background.js"]
+      "background/main.js"]
   },
   "description": "Updating jira statuses in sync with stash",
   "browser_action": {

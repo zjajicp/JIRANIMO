@@ -3,52 +3,17 @@ const Stash = function ({
   observable,
   getBasicAuthentication,
   ajax,
-  localStorage,
-  webRequest }) {
+  webRequest,
+  getPrEqualsFn }) {
   const REST_API_URL = `${config.baseUrl}/${config.restApiPath}/projects/${config.project}/repos/${config.repository}`;
   const REST_JIRA_URL = `${config.baseUrl}/${config.restJiraPath}/projects/${config.project}/repos/${config.repository}`;
-
-  let unmergedPrs = [];
-
-  localStorage.get('unmerged', ({ unmerged }) => {
-    unmergedPrs = unmerged || [];
-  });
-
-  const saveToLocalStorage = (unmergedList) => {
-    localStorage.set({
-      unmerged: unmergedList
-    });
-  };
-
-  const getEquals = (object) => {
-    return ({ title = '', description = '' }) => {
-      return (object.title || '').trim() === title.trim() && description.trim() === (object.description || '').trim();
-    };
-  };
-
-
-  const addToUnmergedList = ({ title, description, destBranch }) => {
-    if (!unmergedPrs.find(getEquals({ title, description }))) {
-      unmergedPrs.push({
-        title,
-        description,
-        destBranch
-      });
-      saveToLocalStorage(unmergedPrs);
-    }
-  };
-
-  const removeFromUnmergedList = (pr) => {
-    const index = unmergedPrs.findIndex(getEquals(pr));
-    unmergedPrs.splice(index, 1);
-    saveToLocalStorage(unmergedPrs);
-  };
 
   const branchNameMatcher = /refs\/heads\/(.+)/;
   const getBranchName = fullName => fullName.match(branchNameMatcher)[1];
 
   const startObservingPrCreation = () => {
     const filteredUrls = [`${config.baseUrl}/projects/${config.project}/repos/${config.repository}/pull-requests?create`];
+
     return observable.create((observer) => {
       const onBeforeRequest = (details) => {
         if (details.method === 'POST') {
@@ -57,7 +22,6 @@ const Stash = function ({
             description: details.requestBody.formData.description[0],
             destBranch: getBranchName(details.requestBody.formData.toBranch[0])
           };
-          addToUnmergedList(poolRequest);
           observer.next(poolRequest);
           console.log('PR started being monitored');
         }
@@ -79,7 +43,7 @@ const Stash = function ({
     Authorization: getBasicAuthentication(config.username, config.password)
   });
 
-  const startPoolingForMerged = ({ poolInterval = 3600000, }) => observable
+  const startPoolingForMerged = ({ poolInterval = 3600000 }) => observable
     .interval(poolInterval)
     .switchMap(() => ajaxGet(`${REST_API_URL}/pull-requests`, {
       state: 'MERGED',
@@ -88,10 +52,7 @@ const Stash = function ({
       limit: 30
     }))
     .pluck('data', 'values')
-    .switchMap(values => observable.from(values))
-    .filter((mergedPr) => {
-      return unmergedPrs.find(getEquals(mergedPr));
-    });
+    .switchMap(values => observable.from(values));
 
   const getRelatedJiraKeys = (prId) => {
     const getIssuesUrl = `${REST_JIRA_URL}/pull-requests/${prId}/issues`;
@@ -108,16 +69,13 @@ const Stash = function ({
       limit: 36
     }).pluck('data', 'values')
       .switchMap(prs => observable.from(prs))
-      .filter((pr) => {
-        return getEquals({ title, description })(pr);
-      });
+      .filter(pr => getPrEqualsFn({ title, description })(pr));
   };
 
   return {
     startObservingPrCreation,
     startPoolingForMerged,
     getRelatedJiraKeys,
-    getPoolRequest,
-    removeFromUnmergedList
+    getPoolRequest
   };
 };

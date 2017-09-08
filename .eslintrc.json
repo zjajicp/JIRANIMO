@@ -7,7 +7,7 @@
     "Jira": true,
     "Ajax": true,
     "Rx": true,
-    "getBasicAuthentication": true,
+    "Utils": true,
     "btoa": true,
     "JIRA_STATUSES": true,
     "chrome": true,
@@ -18,7 +18,11 @@
     "Notifier": true,
     "ConfigLoader": true,
     "Jenkins": true,
-    "branchToJobMapper": true
+    "branchToJobMapper": true,
+    "UnmergedList": true,
+    "TicketUpdater": true,
+    "PoolRequestHandler": true,
+    "MergeHandler": true
   },
    "rules": {
        "comma-dangle": "off",

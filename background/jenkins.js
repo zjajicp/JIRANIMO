@@ -22,6 +22,10 @@ const Jenkins = function ({ observable, ajax, basicAuthentication, config }) {
             }
           }
         });
+
+      return () => {
+        intervalSubscription.unsubscribe();
+      };
     }));
 
   return {

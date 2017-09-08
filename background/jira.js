@@ -120,7 +120,9 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
               if (isNotAllowedTransitionError(errData) && index < paths.length) {
                 update(paths[index]);
               } else {
-                observer.error(errData);
+                observer.error(Object.assign({}, errData, {
+                  message: 'INVALID_STATUS_TRANSITION'
+                }));
               }
             }
           });
@@ -139,11 +141,14 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
     });
   };
 
+  const isInvalidStatusTransition = errData => errData.message === 'INVALID_STATUS_TRANSITION';
+
   return {
     updateTransition,
     getTicket,
     updateTicketData,
     updateTransitionWithPath,
-    updateTransitionWithManyPaths
+    updateTransitionWithManyPaths,
+    isInvalidStatusTransition
   };
 };
