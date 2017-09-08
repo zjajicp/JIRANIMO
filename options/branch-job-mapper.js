@@ -31,12 +31,12 @@ const branchToJobMapper = (function () {
     return arrowWrapper;
   };
 
-  const getBranchToJobMapper = (id) => {
+  const getBranchToJobMapper = (branchNameInputId, jobNameInputId) => {
     const formControl = getFormControl();
-    const branchNameInput = getFormControlInput(`${id}_branch`, 'Branch name');
+    const branchNameInput = getFormControlInput(branchNameInputId, 'Branch name');
     formControl.appendChild(branchNameInput);
     formControl.appendChild(getArrow());
-    const jobNameInput = getFormControlInput(`${id}_job`, 'Jenkins job name');
+    const jobNameInput = getFormControlInput(jobNameInputId, 'Jenkins job name');
     formControl.appendChild(jobNameInput);
     return {
       element: formControl,

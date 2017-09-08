@@ -1,5 +1,5 @@
 (function main() {
-  const startScanning = (config) => {
+  const startScanning = (config, branchToJobMap) => {
     const ajax = Ajax({
       observable: Rx.Observable
     });
@@ -83,7 +83,7 @@
         });
     };
 
-    const getJobName = mergedPr => config.branchToJobMap[mergedPr.destBranch];
+    const getJobName = mergedPr => branchToJobMap[mergedPr.destBranch];
 
     const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
       .delay(10000)
@@ -114,7 +114,8 @@
     })
       .mergeMap((mergedPr) => {
         const jobName = getJobName(mergedPr);
-        return jenkins.waitForNextDeploy(jobName, Number(config.jenkins_pool_interval))
+        return jenkins
+          .waitForNextDeploy(jobName, Number(config.jenkins_pool_interval))
           .map(() => mergedPr);
       })
       .do((mergedPr) => {
@@ -154,9 +155,9 @@
       observable: Rx.Observable
     })
       .load('config')
-      .subscribe((config) => {
+      .subscribe((config = {}) => {
         cleanupScanning();
-        cleanupScanning = startScanning(config);
+        cleanupScanning = startScanning(config.inputs, config.branchToJobMap);
       });
   }
 }());

@@ -28,10 +28,11 @@
   const getStoredConfig = (localStorage) => {
     return observable.create((observer) => {
       localStorage.get('config', ({ config = {} }) => {
-        Object.keys(config).forEach((id) => {
+        const inputs = config.inputs || {};
+        Object.keys(inputs).forEach((id) => {
           observer.next({
             name: id,
-            value: config[id]
+            value: inputs[id]
           });
         });
         observer.complete();
@@ -48,15 +49,17 @@
     }, hideAfter);
   };
 
+  const getMapperInputId = (type, index) => `jenkins_mapper_${type}_${index}`;
+
   const getBranchToJobConfig = (inputIds) => {
-    const isBranchNameInput = /jenkins_mapper_\d_branch/;
+    const isBranchNameInput = /jenkins_mapper_branch_\d/;
     const brancNameInputCount = inputIds.filter(id => isBranchNameInput.test(id)).length;
     return Array.from(Array(brancNameInputCount))
-      .map((elem, index) => get(`jenkins_mapper_${index}_branch`).value)
+      .map((elem, index) => get(getMapperInputId('branch', index)).value)
       .filter(elem => elem)
       .reduce((acc, branchName, index) => {
         return Object.assign({
-          [branchName]: get(`jenkins_mapper_${index}_job`).value
+          [branchName]: get(getMapperInputId('job', index)).value
         }, acc);
       }, {});
   };
@@ -66,7 +69,9 @@
   domContentLoaded.do(() => {
     const placeholder = document.querySelector('.branch-job-mapper');
     Array.from(Array(5)).forEach((elem, index) => {
-      const { element } = branchToJobMapper.get(`jenkins_mapper_${index}`);
+      const { element } = branchToJobMapper.get(
+        getMapperInputId('branch', index),
+        getMapperInputId('job', index));
       placeholder.appendChild(element);
     });
   })
@@ -81,16 +86,19 @@
       const form = document.querySelector('.form');
       const inputIds = Array.from(form.querySelectorAll('input')).map(element => element.id);
       const branchToJobMap = getBranchToJobConfig(inputIds);
-      return Rx.Observable.of(inputIds
+      const inputsConfig = inputIds
         .reduce((formData, inputName) => Object.assign({
           [inputName]: get(inputName).value
-        }, formData), {
-          branchToJobMap
-        }));
+        }, formData), {});
+
+      return Rx.Observable.of({
+        inputs: inputsConfig,
+        branchToJobMap
+      });
     })
-    .subscribe((formData) => {
+    .subscribe((config) => {
       chrome.storage.local.set({
-        config: formData
+        config
       });
       notifyFormSaved('message', 'Config saved', 2000);
     });
