@@ -83,7 +83,7 @@
         });
     };
 
-    const getJobName = mergedPr => config.jenkins_branch_to_job_mapper[mergedPr.destBranch];
+    const getJobName = mergedPr => config.branchToJobMap[mergedPr.destBranch];
 
     const unsubscribeFromObservingPrCreation = stash.startObservingPrCreation()
       .delay(10000)

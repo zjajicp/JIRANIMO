@@ -85,12 +85,17 @@
           <label for="" class="form-control__label">Pool interval:</label>
           <input type="text" id="jenkins_pool_interval" class="form-control__input" />
         </div>
+
+        <div class="branch-job-mapper">
+          <div class="form-section-title">Map your branch names to jenkins jobs</div> 
+        </div>
         
         <div class="message" id="message"></div>
 
          <button id="save_btn">Save</button>
       </div>
-      <script src="/node_modules/rxjs/bundles/Rx.js"></script>   
+      <script src="/node_modules/rxjs/bundles/Rx.js"></script>
+      <script src="branch-job-mapper.js"></script>   
       <script src="options.js"></script>
    </body>
 </html>

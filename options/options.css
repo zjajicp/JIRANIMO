@@ -8,6 +8,11 @@
   margin-bottom: 10px;
 }
 
+.form-control--flexable {
+  display: flex;
+  flex-direction: row;
+}
+
 .form-control__label {
   display: block;
 }
@@ -37,3 +42,25 @@
   opacity: 0;
 }
 
+.arrow {
+  position: relative;
+  width: 38px;
+  margin: 0 10px;
+  transform: translateY(50%);
+}
+
+.arrow__body {
+  border: 1px solid black;
+  width: 12px;
+  height: 12px;
+  border-left: none;
+  border-top: none;
+  transform: rotate(-45deg) skew(20deg, 20deg);
+  position: absolute;
+  right: 5px;
+  top: -5px;
+}
+
+.arrow__line {
+  border-top: 1px solid black;
+}

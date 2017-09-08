@@ -1,4 +1,4 @@
-(function optionsScript({ observable }) {
+(function optionsScript({ observable, branchToJobMapper }) {
   const formElems = {};
 
   const get = (formElemId) => {
@@ -48,57 +48,46 @@
     }, hideAfter);
   };
 
-  // const getNeededPermissions = (formData) => {
-  //   return observable.create(({ next, complete }) => {
-  //     const stashPermission = `${formData.stash_base_url}/*`;
-  //     const jiraPermission = `${formData.jira_api_url}/*`;
-  //     chrome.permissions.getAll(({ origins }) => {
-  //       let originsToRequest = [];
-  //       if (!origins.includes(stashPermission)) {
-  //         originsToRequest = originsToRequest.concat(stashPermission);
-  //       }
+  const getBranchToJobConfig = (inputIds) => {
+    const isBranchNameInput = /jenkins_mapper_\d_branch/;
+    const brancNameInputCount = inputIds.filter(id => isBranchNameInput.test(id)).length;
+    return Array.from(Array(brancNameInputCount))
+      .map((elem, index) => get(`jenkins_mapper_${index}_branch`).value)
+      .filter(elem => elem)
+      .reduce((acc, branchName, index) => {
+        return Object.assign({
+          [branchName]: get(`jenkins_mapper_${index}_job`).value
+        }, acc);
+      }, {});
+  };
 
-  //       if (!origins.includes(jiraPermission)) {
-  //         originsToRequest = originsToRequest.concat(jiraPermission);
-  //       }
+  const domContentLoaded = observable.fromEvent(document, 'DOMContentLoaded');
 
-  //       if (originsToRequest.length) {
-  //         next({
-  //           origins: originsToRequest
-  //         });
-  //       }
-  //       complete();
-  //     });
-  //   });
-  // };
-
-
-  observable.fromEvent(document, 'DOMContentLoaded')
+  domContentLoaded.do(() => {
+    const placeholder = document.querySelector('.branch-job-mapper');
+    Array.from(Array(5)).forEach((elem, index) => {
+      const { element } = branchToJobMapper.get(`jenkins_mapper_${index}`);
+      placeholder.appendChild(element);
+    });
+  })
     .switchMap(() => getStoredConfig(chrome.storage.local))
-    .do(({ name, value = '' }) => {
+    .subscribe(({ name, value = '' }) => {
       get(name).value = value;
-    })
+    });
+
+  domContentLoaded
     .switchMap(() => observable.fromEvent(get('save_btn'), 'click'))
-    .switchMap(() => Rx.Observable.of([
-      'stash_username',
-      'stash_password',
-      'stash_author_to_watch',
-      'stash_base_url',
-      'stash_rest_api_path',
-      'stash_rest_jira_path',
-      'stash_project',
-      'stash_repository',
-      'stash_pool_interval',
-      'jira_username',
-      'jira_password',
-      'jira_api_url',
-      'jenkins_username',
-      'jenkins_password',
-      'jenkins_base_url',
-      'jenkins_pool_interval']
-      .reduce((formData, inputName) => Object.assign({
-        [inputName]: get(inputName).value
-      }, formData), {})))
+    .switchMap(() => {
+      const form = document.querySelector('.form');
+      const inputIds = Array.from(form.querySelectorAll('input')).map(element => element.id);
+      const branchToJobMap = getBranchToJobConfig(inputIds);
+      return Rx.Observable.of(inputIds
+        .reduce((formData, inputName) => Object.assign({
+          [inputName]: get(inputName).value
+        }, formData), {
+          branchToJobMap
+        }));
+    })
     .subscribe((formData) => {
       chrome.storage.local.set({
         config: formData
@@ -106,5 +95,6 @@
       notifyFormSaved('message', 'Config saved', 2000);
     });
 }({
-  observable: Rx.Observable
+  observable: Rx.Observable,
+  branchToJobMapper
 }));

@@ -17,7 +17,8 @@
     "document": true,
     "Notifier": true,
     "ConfigLoader": true,
-    "Jenkins": true
+    "Jenkins": true,
+    "branchToJobMapper": true
   },
    "rules": {
        "comma-dangle": "off",
