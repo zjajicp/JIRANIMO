@@ -1,3 +1,9 @@
+.root-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .form {
   display: flex;
   justify-content: flex-start;
@@ -29,6 +35,7 @@
 }
 
 .message {
+  margin-top: 10px;
   color: crimson;
   opacity: 0;
   transition: opacity 0.5s ease-in;
@@ -63,4 +70,65 @@
 
 .arrow__line {
   border-top: 1px solid black;
+}
+
+.hide {
+  display: none;
+}
+
+.navigation {
+  list-style-type: none;
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.navigation .navigation__item {
+  padding: 10px;
+  flex-grow: 1;
+  cursor: pointer;
+}
+
+.navigation .navigation__item:hover {
+  background: yellowgreen;
+}
+
+.active {
+  background: yellowgreen;
+  color: #fff;
+}
+.right-border {
+  border-right: 1px solid #ccc;
+}
+
+.json__input {
+  width: 100%;
+  height: 400px;
+  padding: 10px;
+  color: #1350ff;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.button {
+  background: none;
+  background-color: yellowgreen;
+  padding: 10px;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  margin-top: 20px;
+  box-shadow: none;
+  -webkit-appearance: none;
+  text-shadow: none;
+  cursor: pointer;
+}
+.button:hover {
+  -webkit-appearance: none;
+  background: none !important;
+  color: #fff !important;
+  background-color: yellowgreen !important;
+  border: none !important;
+  box-shadow: none !important;
 }

@@ -22,7 +22,8 @@
     "UnmergedList": true,
     "TicketUpdater": true,
     "PoolRequestHandler": true,
-    "MergeHandler": true
+    "MergeHandler": true,
+    "ConfigMapper": true
   },
    "rules": {
        "comma-dangle": "off",

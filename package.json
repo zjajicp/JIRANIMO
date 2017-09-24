@@ -4,6 +4,7 @@
   "description": "",
   "main": "background.js",
   "dependencies": {
+    "rxjs": "^5.4.3",
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {

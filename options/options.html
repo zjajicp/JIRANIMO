@@ -3,7 +3,12 @@
       <link rel="stylesheet" href="options.css">
    </head>
    <body>
-      <div class="form">
+      <div class="root-container">
+         <ul class="navigation">
+      <li class="navigation__item right-border active"  id="form-tab" content-id="form-content">FORM</li>
+      <li class="navigation__item" id="json-tab" content-id="json-content">JSON</li>
+     </ul>
+      <div class="form" id="form-content">
          <div class="form-section-title">
            Stash
          </div>
@@ -64,7 +69,7 @@
 
          <div class="form-control">
              <label for="" class="form-control__label">REST API url:</label>
-            <input type="text" id="jira_api_url" class="form-control__input" />
+            <input type="text" id="jira_rest_api_url" class="form-control__input" />
          </div>
          
          <div class="form-section-title">JEKINS</div> 
@@ -91,11 +96,20 @@
         </div>
         
         <div class="message" id="message"></div>
+        <button id="save_btn" class="button">Save</button>
+      </div>
 
-         <button id="save_btn">Save</button>
+      <div class="json hide" id="json-content"> 
+        <h3>Enter your json config here</h3> 
+        <textarea name="json-config" id="json_config" class="json__input"></textarea>
+        <div class="message" id="message-json"></div>
+        <button id="save_json_btn" class="button">Save</button>
+      </div>
+
       </div>
       <script src="/node_modules/rxjs/bundles/Rx.js"></script>
-      <script src="branch-job-mapper.js"></script>   
+      <script src="branch-job-component.js"></script>
+      <script src="config-mapper.js"></script>   
       <script src="options.js"></script>
    </body>
 </html>

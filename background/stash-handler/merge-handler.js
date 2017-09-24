@@ -5,11 +5,13 @@ const MergeHandler = ({
   unmergedList,
   notifier,
   jira,
-  config,
+  stashPoolInterval,
+  jenkinsPoolInterval,
   ticketUpdater,
   observable,
   JIRA_STATUSES }) => {
   const notifyAboutMergedPr = ({ key, url, statusName }) => {
+    console.log('Notifiying merged PR', key, url);
     notifier.jiraTicketUpdated({
       ticketId: key,
       ticketUrl: url,
@@ -20,7 +22,7 @@ const MergeHandler = ({
   const getJobName = branchName => branchToJobMap[branchName];
   const handle = () => {
     return stash.startPoolingForMerged({
-      poolInterval: Number(config.stash_pool_interval)
+      poolInterval: stashPoolInterval
     })
       .filter(mergedPr => unmergedList.find(mergedPr))
       .map(mergedPr => Object.assign({}, mergedPr, unmergedList.find(mergedPr)))
@@ -33,7 +35,7 @@ const MergeHandler = ({
           }
 
           return jenkins
-            .waitForNextDeploy(jobName, Number(config.jenkins_pool_interval))
+            .waitForNextDeploy(jobName, jenkinsPoolInterval)
             .map(() => mergedPr);
         });
       })
@@ -53,6 +55,9 @@ const MergeHandler = ({
         ], [
           JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED,
           JIRA_STATUSES.MOVE_TO_TEST
+        ], [
+          JIRA_STATUSES.MERGE_TO_DEV,
+          JIRA_STATUSES.READY_FOR_TEST_FROM_MERGE_TO_DEV
         ]],
         assignToReporter: true
       }))

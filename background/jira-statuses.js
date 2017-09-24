@@ -30,5 +30,13 @@ const JIRA_STATUSES = {
   REJECTED: {
     code: '331',
     name: 'Rejected'
+  },
+  MERGE_TO_DEV: {
+    code: '51',
+    name: 'Merge to Dev'
+  },
+  READY_FOR_TEST_FROM_MERGE_TO_DEV: {
+    code: '61',
+    name: 'Ready for test'
   }
 };

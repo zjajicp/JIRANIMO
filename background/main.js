@@ -1,6 +1,12 @@
 (function main() {
-  const startScanning = (config, branchToJobMap) => {
-
+  const startScanning = (config) => {
+    // chrome.storage.local.set({
+    //   unmerged: [{
+    //     title: 'Bugfix (RW-25658): Fixed price breakdown resize blinking issue',
+    //     description: '',
+    //     buildNumber: 3128
+    //   }]
+    // });
     // INITING DEPS START
     const ajax = Ajax({
       observable: Rx.Observable
@@ -11,9 +17,9 @@
       observable: Rx.Observable,
       basicAuthentication: Utils.getBasicAuthentication,
       config: {
-        username: config.jenkins_username,
-        password: config.jenkins_password,
-        baseUrl: config.jenkins_base_url
+        username: config.jenkins.username,
+        password: config.jenkins.password,
+        baseUrl: config.jenkins.baseUrl
       }
     });
 
@@ -22,9 +28,9 @@
       basicAuthentication: Utils.getBasicAuthentication,
       observable: Rx.Observable,
       config: {
-        username: config.jira_username,
-        password: config.jira_password,
-        apiUrl: config.jira_api_url
+        username: config.jira.username,
+        password: config.jira.password,
+        apiUrl: config.jira.restApiUrl
       }
     });
 
@@ -36,14 +42,14 @@
       getBasicAuthentication: Utils.getBasicAuthentication,
       getPrEqualsFn: Utils.getPrEqualsFn,
       config: {
-        username: config.stash_username,
-        password: config.stash_password,
-        authorToWatch: config.stash_author_to_watch,
-        baseUrl: config.stash_base_url,
-        restApiPath: config.stash_rest_api_path,
-        restJiraPath: config.stash_rest_jira_path,
-        project: config.stash_project,
-        repository: config.stash_repository
+        username: config.stash.username,
+        password: config.stash.password,
+        authorToWatch: config.stash.authorToWatch,
+        baseUrl: config.stash.baseUrl,
+        restApiPath: config.stash.restApiPath,
+        restJiraPath: config.stash.restJiraPath,
+        project: config.stash.project,
+        repository: config.stash.repository
       }
     });
 
@@ -65,8 +71,9 @@
     const mergeHandler = MergeHandler({
       jira,
       stash,
-      config,
-      branchToJobMap,
+      stashPoolInterval: config.stash.poolInterval,
+      jenkinsPoolInterval: config.jenkins.poolInterval,
+      branchToJobMap: config.jenkins.branchToJobMapper,
       unmergedList,
       jenkins,
       notifier,
@@ -113,7 +120,7 @@
       .load('config')
       .subscribe((config = {}) => {
         cleanupScanning();
-        cleanupScanning = startScanning(config.inputs, config.branchToJobMap);
+        cleanupScanning = startScanning(config);
       });
   }
 }());
