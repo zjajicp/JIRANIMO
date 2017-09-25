@@ -1,15 +1,17 @@
 (function main() {
   const startScanning = (config) => {
-    // chrome.storage.local.set({
-    //   unmerged: [{
-    //     title: 'Bugfix (RW-25658): Fixed price breakdown resize blinking issue',
-    //     description: '',
-    //     buildNumber: 3128
-    //   }]
-    // });
     // INITING DEPS START
     const ajax = Ajax({
       observable: Rx.Observable
+    });
+
+    const jiraStatuses = JiraStatuses({
+      ISSUE_TYPES
+    });
+
+    const workflowPaths = WorkflowPaths({
+      ISSUE_TYPES,
+      JIRA_STATUSES: jiraStatuses
     });
 
     const jenkins = Jenkins({
@@ -65,7 +67,9 @@
 
     const ticketUpdater = TicketUpdater({
       jira,
-      stash
+      stash,
+      workflowPaths,
+      ISSUE_TYPES
     });
 
     const mergeHandler = MergeHandler({
@@ -79,7 +83,7 @@
       notifier,
       ticketUpdater,
       observable: Rx.Observable,
-      JIRA_STATUSES
+      workflowPaths
     });
 
     const poolRequestHandler = PoolRequestHandler({
@@ -88,7 +92,7 @@
       ticketUpdater,
       notifier,
       unmergedList,
-      JIRA_STATUSES
+      workflowPaths
     });
 
     // INITING DEPS END

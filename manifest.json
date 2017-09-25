@@ -25,6 +25,8 @@
       "background/jira.js",
       "background/config-loader.js",
       "background/jenkins.js",
+      "background/issue-types.js",
+      "background/workflow-paths.js",
       "background/main.js"]
   },
   "description": "Updating jira statuses in sync with stash",

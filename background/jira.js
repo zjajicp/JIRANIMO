@@ -11,6 +11,12 @@ const Jira = function ({ config, basicAuthentication, ajax, observable }) {
       };
     }
 
+    if (ticketData.resolution) {
+      fields.resolution = {
+        id: ticketData.resolution
+      };
+    }
+
     if (ticketData.title) {
       fields.summary = ticketData.title;
     }

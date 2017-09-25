@@ -9,7 +9,7 @@
     "Rx": true,
     "Utils": true,
     "btoa": true,
-    "JIRA_STATUSES": true,
+    "JiraStatuses": true,
     "chrome": true,
     "fetch": true,
     "XMLHttpRequest": true,
@@ -23,10 +23,13 @@
     "TicketUpdater": true,
     "PoolRequestHandler": true,
     "MergeHandler": true,
-    "ConfigMapper": true
+    "ConfigMapper": true,
+    "ISSUE_TYPES": true,
+    "WorkflowPaths": true
   },
    "rules": {
        "comma-dangle": "off",
-       "prefer-arrow-callback": "off"
+       "prefer-arrow-callback": "off",
+       "func-names": "off"
    }
 }

@@ -4,7 +4,7 @@ const PoolRequestHandler = ({
   ticketUpdater,
   unmergedList,
   notifier,
-  JIRA_STATUSES
+  workflowPaths
 }) => {
   const extendWithCurrentBuildNumber = prData => jenkins.getCurrentBuildNumber()
     .map(currentBuildNumber => Object.assign({
@@ -17,15 +17,7 @@ const PoolRequestHandler = ({
     .map(extendWithCurrentBuildNumber)
     .do(unmergedList.add)
     .mergeMap(prData => ticketUpdater.updateRelatedJiraTickets(prData, {
-      statusPaths: [[
-        JIRA_STATUSES.START_PROGRESS_FROM_OPEN,
-        JIRA_STATUSES.CODE_REVIEW,
-      ], [
-        JIRA_STATUSES.START_PROGRESS_FROM_REOPEN,
-        JIRA_STATUSES.CODE_REVIEW
-      ], [
-        JIRA_STATUSES.CODE_REVIEW_FROM_BLOCKED
-      ]]
+      statusPathType: workflowPaths.STATUS_PATH_TYPES.MERGED_PR
     }))
     .mergeMap(({ prId, prTitle, url }) => notifier.prBeingMonitored({
       prId,
