@@ -92,7 +92,8 @@
       ticketUpdater,
       notifier,
       unmergedList,
-      workflowPaths
+      workflowPaths,
+      branchToJobMap: config.jenkins.branchToJobMapper
     });
 
     // INITING DEPS END

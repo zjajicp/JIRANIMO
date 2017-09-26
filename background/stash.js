@@ -23,7 +23,6 @@ const Stash = function ({
             destBranch: getBranchName(details.requestBody.formData.toBranch[0])
           };
           observer.next(poolRequest);
-          console.log('PR started being monitored');
         }
 
         return details;
@@ -58,8 +57,7 @@ const Stash = function ({
     const getIssuesUrl = `${REST_JIRA_URL}/pull-requests/${prId}/issues`;
     return ajaxGet(getIssuesUrl)
       .pluck('data')
-      .switchMap(jiraTickets => observable.from(jiraTickets))
-      .do(console.log);
+      .switchMap(jiraTickets => observable.from(jiraTickets));
   };
 
   const getPoolRequest = ({ title, description }, state) => {
@@ -69,7 +67,10 @@ const Stash = function ({
       limit: 36
     }).pluck('data', 'values')
       .switchMap(prs => observable.from(prs))
-      .filter(pr => getPrEqualsFn({ title, description })(pr));
+      .filter(pr => getPrEqualsFn({ title, description })(pr))
+      .do((pr) => {
+        console.log('PR creation succesffuly observed: ', pr);
+      });
   };
 
   return {
