@@ -1,4 +1,4 @@
-(function optionsScript({ observable, branchToJobMapper, ConfigMapper }) {
+(function optionsScript({ observable, branchToJobMapper, ConfigMapper, formatJson }) {
   const formElems = {};
 
   const get = (formElemId) => {
@@ -74,7 +74,7 @@
 
   const loadConfig = getStoredConfig(chrome.storage.local)
     .do((config) => {
-      get('json_config').value = JSON.stringify(config);
+      get('json_config').value = formatJson(JSON.stringify(config));
     })
     .map(config => ConfigMapper.getFormFieldsFromConfig(config, FORM_TO_CONFIG_MAP, getMapperInputId))
     .switchMap(list => observable.from(list))
@@ -117,7 +117,7 @@
     .mergeMap(tabId => observable.fromEvent(get(tabId), 'click'))
     .pluck('target', 'id')
     .do(switchTab)
-    .map(() => loadConfig)
+    .switchMap(() => loadConfig)
     .subscribe(() => {
       console.log('Tab switched');
     });
@@ -155,5 +155,6 @@
 }({
   observable: Rx.Observable,
   branchToJobMapper,
-  ConfigMapper
+  ConfigMapper,
+  formatJson
 }));
