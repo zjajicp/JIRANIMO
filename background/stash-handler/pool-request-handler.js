@@ -16,10 +16,10 @@ const PoolRequestHandler = ({
       }, prData));
   };
 
+  const enoughTimeForThePrToBeStoredOnBE = 10000;
+
   const handle = () => stash.startObservingPrCreation()
-    .do((prBasicData) => {
-      console.log('PR creation observerd: ', prBasicData);
-    })
+    .delay(enoughTimeForThePrToBeStoredOnBE)
     .mergeMap(prBasicData => stash.getPoolRequest(prBasicData, 'OPEN'))
     .mergeMap(extendWithCurrentBuildNumber)
     .do(unmergedList.add)

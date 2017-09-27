@@ -98,13 +98,23 @@
 
     // INITING DEPS END
 
+    const whenTransitionErrorHappens = errors => errors.switchMap((error) => {
+      if (jira.isInvalidStatusTransition(error)) {
+        return Rx.Observable.of(null);
+      }
+
+      return Rx.Observable.throw(error);
+    });
+
     const unsubscribeFromObservingPrCreation = poolRequestHandler.handle()
+      .retryWhen(whenTransitionErrorHappens)
       .subscribe({
         next: console.log,
         error: console.error
       });
 
     const unsubscribeFromWatchingPrMerged = mergeHandler.handle()
+      .retryWhen(whenTransitionErrorHappens)
       .subscribe({
         next: console.log,
         error: console.error

@@ -52,14 +52,7 @@ const MergeHandler = ({
       .do((data) => {
         console.log('Ticket status updated after succesfful deploy: ', data);
       })
-      .mergeMap(notifyAboutMergedPr)
-      .retryWhen(errors => errors.switchMap((error) => {
-        if (jira.isInvalidStatusTransition(error)) {
-          return observable.of(null);
-        }
-
-        return observable.throw(error);
-      }));
+      .mergeMap(notifyAboutMergedPr);
   };
 
   return {

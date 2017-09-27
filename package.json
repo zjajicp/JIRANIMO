@@ -1,5 +1,5 @@
 {
-  "name": "update_the_damn_ticket_status",
+  "name": "JIRAnimo",
   "version": "1.0.0",
   "description": "Auto update of related jira tickets after successfull code build",
   "main": "background.js",

@@ -1,6 +1,6 @@
 {
-  "name": "UPDATE THE DAMN TICKET STATUS",
-  "version": "1.0",
+  "name": "JIRAnimo",
+  "version": "1.0.2",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -29,11 +29,11 @@
       "background/workflow-paths.js",
       "background/main.js"]
   },
-  "description": "Updating jira statuses in sync with stash (bitbucket)",
+  "description": "Updating jira statuses in sync with stash (bitbucket) aka UPDATE THE DAMN TICKET",
   "browser_action": {
     "default_popup": "index.html",
     "default_icon": "icon.png",
-    "default_title": "Sync JIRA"
+    "default_title": "JIRAnimo"
   },
   "options_ui": {
     "page": "options/options.html",
