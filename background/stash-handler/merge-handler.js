@@ -50,7 +50,7 @@ const MergeHandler = ({
         assignToReporter: true,
       }))
       .do((data) => {
-        console.log(data);
+        console.log('Ticket status updated after succesfful deploy: ', data);
       })
       .mergeMap(notifyAboutMergedPr)
       .retryWhen(errors => errors.switchMap((error) => {

@@ -1,5 +1,5 @@
 {
-  "name": "JIRA SYNCER",
+  "name": "UPDATE THE DAMN TICKET STATUS",
   "version": "1.0",
   "manifest_version": 2,
   "permissions": [
@@ -12,7 +12,7 @@
   ],
   "background": {
     "scripts": [
-      "/node_modules/rxjs/bundles/Rx.js",
+      "/node_modules/rxjs/bundles/Rx.min.js",
       "background/stash-handler/merge-handler.js",
       "background/stash-handler/pool-request-handler.js",
       "background/stash-handler/ticket-updater.js",
@@ -29,7 +29,7 @@
       "background/workflow-paths.js",
       "background/main.js"]
   },
-  "description": "Updating jira statuses in sync with stash",
+  "description": "Updating jira statuses in sync with stash (bitbucket)",
   "browser_action": {
     "default_popup": "index.html",
     "default_icon": "icon.png",

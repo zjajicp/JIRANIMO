@@ -51,6 +51,8 @@ const Notifier = ({
       }]
     });
 
+    
+
     return onNotificationButtonClicked.do(getOpenTicketHandler(notificationId, ticketUrl));
   };
 

@@ -70,7 +70,7 @@
 
   const getMapperInputId = (type, index) => `jenkins_mapper_${type}_${index}`;
 
-  const domContentLoaded = observable.fromEvent(document, 'DOMContentLoaded');
+  const domContentLoaded = observable.fromEvent(document, 'DOMContentLoaded').share();
 
   const loadConfig = getStoredConfig(chrome.storage.local)
     .do((config) => {
@@ -82,6 +82,7 @@
       get(name).value = value;
     });
 
+  
 
   domContentLoaded.do(() => {
     const placeholder = document.querySelector('.branch-job-mapper');
@@ -122,11 +123,14 @@
       console.log('Tab switched');
     });
 
-  domContentLoaded
-    .switchMap(() => observable.fromEvent(get('save_json_btn'), 'click'))
+  observable.fromEvent(get('save_json_btn'), 'click')
     .map(() => get('json_config'))
     .pluck('value')
     .map(jsonConfig => JSON.parse(jsonConfig))
+    .retryWhen(errors => errors.switchMap(error => {
+      notifyFormSaved('error', error.message);
+      return observable.of(null);
+    }))
     .subscribe((config) => {
       chrome.storage.local.set({
         config

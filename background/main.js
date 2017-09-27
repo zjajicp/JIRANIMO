@@ -75,8 +75,8 @@
     const mergeHandler = MergeHandler({
       jira,
       stash,
-      stashPoolInterval: config.stash.poolInterval,
-      jenkinsPoolInterval: config.jenkins.poolInterval,
+      stashPoolInterval: Number(config.stash.poolInterval),
+      jenkinsPoolInterval: Number(config.jenkins.poolInterval),
       branchToJobMap: config.jenkins.branchToJobMapper,
       unmergedList,
       jenkins,

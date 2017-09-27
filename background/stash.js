@@ -22,6 +22,7 @@ const Stash = function ({
             description: details.requestBody.formData.description[0],
             destBranch: getBranchName(details.requestBody.formData.toBranch[0])
           };
+
           observer.next(poolRequest);
         }
 

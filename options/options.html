@@ -95,16 +95,19 @@
           <div class="form-section-title">Map your branch names to jenkins jobs</div> 
         </div>
         
-        <div class="message" id="message"></div>
+        <div class="message message-success" id="message"></div>
         <button id="save_btn" class="button">Save</button>
       </div>
 
       <div class="json hide" id="json-content"> 
         <h3>Enter your json config here</h3> 
         <textarea name="json-config" id="json_config" class="json__input"></textarea>
-        <div class="message" id="message-json"></div>
+        <div class="message message-success" id="message-json"></div>
+        <div id="error" class="message error-message"></div>
         <button id="save_json_btn" class="button">Save</button>
       </div>
+
+      
 
       </div>
       <script src="format-json.js"></script>
